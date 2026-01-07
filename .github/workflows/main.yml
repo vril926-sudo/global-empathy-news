@@ -41,9 +41,10 @@ jobs:
       
       - name: Copy data to web directory
         run: |
-          mkdir -p web/data
-          cp data/latest_analysis.json web/data/
-          cp data/latest_news.json web/data/ || true
+          # web/public/data という、Next.jsが公開できる場所にコピーします
+          mkdir -p web/public/data
+          cp data/latest_analysis.json web/public/data/ || echo "Analysis data not found"
+          cp data/latest_news.json web/public/data/ || echo "News data not found"
       
       - name: Upload analysis results
         uses: actions/upload-artifact@v4
@@ -57,7 +58,7 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Update news analysis data [automated]"
-          file_pattern: "data/*.json data/*.txt web/data/*.json"
+          file_pattern: "data/*.json web/public/data/*.json"
           commit_user_name: "github-actions[bot]"
           commit_user_email: "github-actions[bot]@users.noreply.github.com"
           commit_author: "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
