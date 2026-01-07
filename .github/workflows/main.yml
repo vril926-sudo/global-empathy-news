@@ -3,9 +3,7 @@ name: Global Empathy News Analysis
 on:
   push:
     branches:
-      - main
-  schedule:
-    - cron: '0 */6 * * *'
+      - master
   workflow_dispatch:
 
 jobs:
@@ -15,11 +13,9 @@ jobs:
       contents: write
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
@@ -28,19 +24,19 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: Run news analyzer
+      - name: Run analysis
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           python news_analyzer.py
 
-      - name: Copy JSON for Vercel
+      - name: Prepare public data for Vercel
         run: |
           mkdir -p public/data
           cp data/latest_analysis.json public/data/news.json
 
-      - name: Commit generated JSON
+      - name: Commit generated data
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: update news.json"
-          file_pattern: "public/data/news.json"
+          file_pattern: public/data/news.json
