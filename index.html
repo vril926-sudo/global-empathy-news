@@ -1,27 +1,30 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <title>Global Empathy News</title>
-  </head>
-  <body>
-    <h1>Global Empathy News</h1>
-    <p>Latest analysis (auto-updated)</p>
+<head>
+  <meta charset="utf-8">
+  <title>Global Empathy News</title>
+</head>
+<body>
+  <h1>Global Empathy News</h1>
+  <p>Latest analysis (auto-updated)</p>
 
-    <pre id="output">Loading...</pre>
+  <pre id="output">Loading...</pre>
 
-    <script>
-      fetch('/data/news.json')
-        .then(res => res.json())
-        .then(data => {
-          document.getElementById('output').textContent =
-            JSON.stringify(data, null, 2);
-        })
-        .catch(err => {
-          document.getElementById('output').textContent =
-            'Failed to load news.json';
-          console.error(err);
-        });
-    </script>
-  </body>
+  <script>
+    fetch('/data/news.json')
+      .then(res => {
+        if (!res.ok) throw new Error(res.status);
+        return res.json();
+      })
+      .then(data => {
+        document.getElementById('output').textContent =
+          JSON.stringify(data, null, 2);
+      })
+      .catch(err => {
+        document.getElementById('output').textContent =
+          'Failed to load news.json';
+        console.error(err);
+      });
+  </script>
+</body>
 </html>
