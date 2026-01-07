@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Global Empathy News</title>
+  </head>
+  <body>
+    <h1>Global Empathy News</h1>
+    <p>If you see this page, Vercel is working.</p>
+
+    <pre id="output">Loading...</pre>
+
+    <script>
+      fetch('/data/news.json')
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('output').textContent =
+            JSON.stringify(data, null, 2);
+        })
+        .catch(err => {
+          document.getElementById('output').textContent =
+            'Failed to load news.json';
+          console.error(err);
+        });
+    </script>
+  </body>
+</html>
