@@ -36,6 +36,9 @@ NEWS_SOURCES = {
     }
 }
 
+# Data directory for storing analysis results (used by Next.js frontend)
+DATA_DIR = "data"
+
 
 def collect_news() -> dict:
     """
@@ -230,50 +233,47 @@ def generate_report(analysis: dict, news_data: dict) -> str:
     return "\n".join(report)
 
 
-def save_results(analysis: dict, news_data: dict, output_dir: str = "output"):
+def save_results(analysis: dict, news_data: dict):
     """
-    Save analysis results to JSON and text files.
+    Save analysis results to JSON files in the data directory.
     
     Args:
         analysis: Analysis results from Gemini
         news_data: Original news data
-        output_dir: Directory to save output files
     """
-    os.makedirs(output_dir, exist_ok=True)
+    # Create data directory if it doesn't exist
+    os.makedirs(DATA_DIR, exist_ok=True)
     
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     
-    # Save raw analysis JSON
-    analysis_file = os.path.join(output_dir, f"analysis_{timestamp}.json")
-    with open(analysis_file, "w", encoding="utf-8") as f:
+    # Save latest analysis JSON (for Next.js frontend)
+    latest_analysis = os.path.join(DATA_DIR, "latest_analysis.json")
+    with open(latest_analysis, "w", encoding="utf-8") as f:
         json.dump(analysis, f, indent=2, ensure_ascii=False)
-    print(f"\nAnalysis saved to: {analysis_file}")
+    print(f"\nAnalysis saved to: {latest_analysis}")
     
-    # Save raw news data
-    news_file = os.path.join(output_dir, f"news_data_{timestamp}.json")
-    with open(news_file, "w", encoding="utf-8") as f:
+    # Save latest news data JSON (for Next.js frontend)
+    latest_news = os.path.join(DATA_DIR, "latest_news.json")
+    with open(latest_news, "w", encoding="utf-8") as f:
         json.dump(news_data, f, indent=2, ensure_ascii=False)
-    print(f"News data saved to: {news_file}")
+    print(f"News data saved to: {latest_news}")
     
     # Save human-readable report
     report = generate_report(analysis, news_data)
-    report_file = os.path.join(output_dir, f"report_{timestamp}.txt")
-    with open(report_file, "w", encoding="utf-8") as f:
-        f.write(report)
-    print(f"Report saved to: {report_file}")
-    
-    # Also save latest version for easy access
-    latest_analysis = os.path.join(output_dir, "latest_analysis.json")
-    with open(latest_analysis, "w", encoding="utf-8") as f:
-        json.dump(analysis, f, indent=2, ensure_ascii=False)
-    
-    latest_report = os.path.join(output_dir, "latest_report.txt")
+    latest_report = os.path.join(DATA_DIR, "latest_report.txt")
     with open(latest_report, "w", encoding="utf-8") as f:
         f.write(report)
+    print(f"Report saved to: {latest_report}")
     
-    print(f"\nLatest results also saved as:")
-    print(f"  - {latest_analysis}")
-    print(f"  - {latest_report}")
+    # Save timestamped backup
+    backup_file = os.path.join(DATA_DIR, f"analysis_{timestamp}.json")
+    with open(backup_file, "w", encoding="utf-8") as f:
+        json.dump({
+            "analysis": analysis,
+            "news_data": news_data,
+            "timestamp": timestamp
+        }, f, indent=2, ensure_ascii=False)
+    print(f"Backup saved to: {backup_file}")
 
 
 def main():

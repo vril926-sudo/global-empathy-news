@@ -36,11 +36,17 @@ env/
 .env
 .env.local
 
-# Output files (keep latest for reference, ignore timestamped ones)
-output/analysis_*.json
-output/news_data_*.json
-output/report_*.txt
+# Data files (keep latest for frontend, ignore timestamped backups)
+data/analysis_*.json
+
+# Legacy output directory
+output/
 
 # OS
 .DS_Store
 Thumbs.db
+
+# Next.js
+web/.next/
+web/out/
+web/node_modules/
