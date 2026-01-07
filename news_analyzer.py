@@ -94,6 +94,7 @@ def create_analysis_prompt(news_data: dict) -> str:
         news_summary += f"\n\n=== {source} ===\n"
         for i, article in enumerate(articles, 1):
             news_summary += f"\n{i}. {article['title']}\n"
+            news_summary += f"   Link: {article['link']}\n"
             news_summary += f"   Summary: {article['summary'][:300]}...\n" if len(article['summary']) > 300 else f"   Summary: {article['summary']}\n"
     
     prompt = f"""You are a news analysis expert specializing in identifying perspective gaps across international media.
@@ -136,6 +137,8 @@ Respond in the following JSON format ONLY (no additional text):
     "overall_gap_score": 65,
     "summary": "Brief overall analysis of the current news landscape perspective gaps"
 }}
+
+IMPORTANT: For "related_articles", you MUST use the EXACT article titles and links provided in the news data above. DO NOT create fake URLs or example URLs.
 """
     return prompt
 
