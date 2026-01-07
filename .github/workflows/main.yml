@@ -15,7 +15,7 @@ jobs:
       contents: write
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -28,19 +28,19 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: Run analyzer
+      - name: Run news analyzer
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           python news_analyzer.py
 
-      - name: Ensure public data exists
+      - name: Copy JSON for Vercel
         run: |
           mkdir -p public/data
-          cp data/*.json public/data/
+          cp data/latest_analysis.json public/data/news.json
 
-      - name: Commit generated data
+      - name: Commit generated JSON
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: update news data"
-          file_pattern: "public/data/*.json"
+          commit_message: "chore: update news.json"
+          file_pattern: "public/data/news.json"
