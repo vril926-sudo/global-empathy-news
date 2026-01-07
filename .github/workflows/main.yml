@@ -41,9 +41,12 @@ jobs:
       
       - name: Copy data for Vercel
         run: |
-          # Next.jsが確実に認識する場所（public）にデータを集約
+          # パターン1: /data/latest_analysis.json 用
           mkdir -p web/public/data
           cp data/*.json web/public/data/ || true
+          
+          # パターン2: /latest_analysis.json 用 (直下)
+          cp data/*.json web/public/ || true
           
           # デバッグ用にコピー先を確認（Actionsのログで見れるようになります）
           ls -R web/public/data
