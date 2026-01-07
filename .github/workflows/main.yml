@@ -7,16 +7,6 @@ on:
   
   # 手動実行も可能
   workflow_dispatch:
-  
-  # mainブランチへのpush時にも実行
-  push:
-    branches:
-      - main
-      - master
-    paths:
-      - 'news_analyzer.py'
-      - 'requirements.txt'
-      - '.github/workflows/main.yml'
 
 jobs:
   analyze-news:
@@ -28,6 +18,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # git-auto-commit-actionのためにfetch-depthを設定
+          fetch-depth: 0
       
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -46,22 +39,29 @@ jobs:
         run: |
           python news_analyzer.py
       
+      - name: Copy data to web directory
+        run: |
+          mkdir -p web/data
+          cp data/latest_analysis.json web/data/
+          cp data/latest_news.json web/data/ || true
+      
       - name: Upload analysis results
         uses: actions/upload-artifact@v4
         with:
           name: analysis-results-${{ github.run_number }}
           path: data/
-          if-no-files-found: warn
           retention-days: 30
+          if-no-files-found: warn
       
-      - name: Commit and push latest results
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          
-          # outputディレクトリが存在し、latest_*ファイルがある場合のみコミット
-          if [ -f "output/latest_analysis.json" ]; then
-            git add output/latest_analysis.json output/latest_report.txt
-            git diff --staged --quiet || git commit -m "Update latest analysis results [skip ci]"
-            git push
-          fi
+      - name: Auto commit and push data files
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Update news analysis data [automated]"
+          file_pattern: "data/*.json data/*.txt web/data/*.json"
+          commit_user_name: "github-actions[bot]"
+          commit_user_email: "github-actions[bot]@users.noreply.github.com"
+          commit_author: "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
+          # 変更がない場合はスキップ
+          skip_dirty_check: false
+          # プッシュを有効化
+          push_options: '--force-with-lease'
