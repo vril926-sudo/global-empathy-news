@@ -50,7 +50,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: analysis-results-${{ github.run_number }}
-          path: output/
+          path: data/
+          if-no-files-found: warn
           retention-days: 30
       
       - name: Commit and push latest results
