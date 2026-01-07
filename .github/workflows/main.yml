@@ -1,23 +1,32 @@
 name: Global Empathy News Analysis
 
 on:
-  push:
-    branches:
-      - master
+  # 6時間ごとに実行
+  schedule:
+    - cron: '0 */6 * * *'
+  # 手動実行ボタンも有効化
   workflow_dispatch:
 
+permissions:
+  # 変更を保存するための権限
+  contents: write
+
 jobs:
-  analyze-news:
+  update-news:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
+    
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        # 過去の履歴も含めて取得（自動コミットのエラー防止）
+        with:
+          fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+          cache: 'pip'
 
       - name: Install dependencies
         run: |
@@ -28,15 +37,13 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
+          # ニュース分析を実行 (結果は data/ フォルダに出力される想定)
           python news_analyzer.py
 
-      - name: Prepare public data for Vercel
-        run: |
-          mkdir -p public/data
-          cp data/latest_analysis.json public/data/news.json
-
-      - name: Commit generated data
+      - name: Save results to repository
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: update news.json"
-          file_pattern: public/data/news.json
+          commit_message: "Update news analysis [automated]"
+          # dataフォルダ内の変更だけを確実に保存
+          file_pattern: "data/*.json"
+          commit_user_name: "github-actions[bot]"
