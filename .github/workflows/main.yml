@@ -39,30 +39,18 @@ jobs:
         run: |
           python news_analyzer.py
       
-      - name: Copy data to web directory
+      - name: Copy data for Vercel
         run: |
-          # web/public/data という、Next.jsが公開できる場所にコピーします
+          # Next.jsが確実に認識する場所（public）にデータを集約
           mkdir -p web/public/data
-          cp data/latest_analysis.json web/public/data/ || echo "Analysis data not found"
-          cp data/latest_news.json web/public/data/ || echo "News data not found"
-      
-      - name: Upload analysis results
-        uses: actions/upload-artifact@v4
-        with:
-          name: analysis-results-${{ github.run_number }}
-          path: data/
-          retention-days: 30
-          if-no-files-found: warn
-      
+          cp data/*.json web/public/data/ || true
+          
+          # デバッグ用にコピー先を確認（Actionsのログで見れるようになります）
+          ls -R web/public/data
+
       - name: Auto commit and push data files
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Update news analysis data [automated]"
+          commit_message: "chore: sync analysis data to public/data [automated]"
           file_pattern: "data/*.json web/public/data/*.json"
           commit_user_name: "github-actions[bot]"
-          commit_user_email: "github-actions[bot]@users.noreply.github.com"
-          commit_author: "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
-          # 変更がない場合はスキップ
-          skip_dirty_check: false
-          # プッシュを有効化
-          push_options: '--force-with-lease'
