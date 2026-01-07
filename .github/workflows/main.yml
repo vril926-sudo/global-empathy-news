@@ -1,10 +1,13 @@
 name: Global Empathy News Analysis
 
 on:
+  # 変更を保存した瞬間に実行されるようにします
+  push:
+    branches:
+      - master
   # 6時間ごとに自動実行
   schedule:
     - cron: '0 */6 * * *'
-  
   # 手動実行も可能
   workflow_dispatch:
 
@@ -19,7 +22,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          # git-auto-commit-actionのためにfetch-depthを設定
           fetch-depth: 0
       
       - name: Set up Python
@@ -41,19 +43,20 @@ jobs:
       
       - name: Copy data for Vercel
         run: |
-          # パターン1: /data/latest_analysis.json 用
+          # 1. 念のためルート直下のpublic（Vercelの標準）
+          mkdir -p public/data
+          cp data/*.json public/data/ || true
+          cp data/*.json public/ || true
+
+          # 2. webフォルダの中のpublic（Manusの構成）
           mkdir -p web/public/data
           cp data/*.json web/public/data/ || true
-          
-          # パターン2: /latest_analysis.json 用 (直下)
           cp data/*.json web/public/ || true
           
-          # デバッグ用にコピー先を確認（Actionsのログで見れるようになります）
-          ls -R web/public/data
-
       - name: Auto commit and push data files
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: sync analysis data to public/data [automated]"
-          file_pattern: "data/*.json web/public/data/*.json"
+          commit_message: "chore: sync analysis data to all possible paths [automated]"
+          # 【重要】変更したすべての場所を保存対象に含めます
+          file_pattern: "data/*.json public/**/*.json web/public/**/*.json"
           commit_user_name: "github-actions[bot]"
